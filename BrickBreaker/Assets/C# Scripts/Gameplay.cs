@@ -32,13 +32,17 @@ public class Gameplay : MonoBehaviour
         Instantiate(brickTemplate, transform.position, Quaternion.identity);
     }
 
-    private void CheckGameOver()
+    private void CheckIfWon()
     {
         if (numOfBricks < 1)
         {
             Won.SetActive(true);
             Invoke("ResetLevel", delay);
         }
+    }
+
+    private void CheckIfLost()
+    {
         if (lives < 1)
         {
             Lost.SetActive(true);
@@ -67,8 +71,8 @@ public class Gameplay : MonoBehaviour
         }
         lives--;
         Destroy(resettingPaddle);
+        CheckIfLost();
         Invoke("ResetPaddleAfterDeath", delay);
-        CheckGameOver();
     }
 
     private void ResetPaddleAfterDeath()
@@ -79,6 +83,6 @@ public class Gameplay : MonoBehaviour
     public void DestroyBrick()
     {
         numOfBricks--;
-        CheckGameOver();
+        CheckIfWon();
     }
 }
