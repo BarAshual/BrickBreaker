@@ -2,7 +2,7 @@
 
 public class Gameplay : MonoBehaviour
 {
-    public float delay = 1.5f;
+    public const float RESET_DELAY = 1.5f;
     public int numOfBricks = 56;
     public int lives = 3;
     public GameObject Won;
@@ -10,10 +10,7 @@ public class Gameplay : MonoBehaviour
     public GameObject brickTemplate;
     public GameObject basePaddle;
     public GameObject resettingPaddle;
-    public GameObject FirstHeart;
-    public GameObject SecondHeart;
-    public GameObject ThirdHeart;
-
+    
     public static Gameplay Instance = null;
 
     private void Start()
@@ -37,7 +34,7 @@ public class Gameplay : MonoBehaviour
         if (numOfBricks < 1)
         {
             Won.SetActive(true);
-            Invoke("ResetLevel", delay);
+            Invoke("ResetLevel", RESET_DELAY);
         }
     }
 
@@ -46,7 +43,7 @@ public class Gameplay : MonoBehaviour
         if (lives < 1)
         {
             Lost.SetActive(true);
-            Invoke("ResetLevel", delay);
+            Invoke("ResetLevel", RESET_DELAY);
         }
     }
 
@@ -60,19 +57,19 @@ public class Gameplay : MonoBehaviour
         switch (lives)
         {
             case 3:
-                FirstHeart.SetActive(false);
+                GameObject.Find("Heart 3").SetActive(false);
                 break;
             case 2:
-                SecondHeart.SetActive(false);
+                GameObject.Find("Heart 2").SetActive(false);
                 break;
-            case 1:
-                ThirdHeart.SetActive(false);
+            case 1:                
+                GameObject.Find("Heart").SetActive(false);
                 break;
         }
         lives--;
         Destroy(resettingPaddle);
         CheckIfLost();
-        Invoke("ResetPaddleAfterDeath", delay);
+        Invoke("ResetPaddleAfterDeath", RESET_DELAY);
     }
 
     private void ResetPaddleAfterDeath()
