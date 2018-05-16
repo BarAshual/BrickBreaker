@@ -1,16 +1,19 @@
 ﻿using UnityEngine;
+using System.Linq;
 
 public class Gameplay : MonoBehaviour
 {
     public const float RESET_DELAY = 1.5f;
-    public int numOfBricks = 56;
+    public const string SCENE_NAME = "BrickBreakerGame";
+    public int brickAmount = 56;
     public int lives = 3;
+    public int currentLevel = 1;
     public GameObject Won;
     public GameObject Lost;
     public GameObject brickTemplate;
     public GameObject basePaddle;
     public GameObject resettingPaddle;
-    
+
     public static Gameplay Instance = null;
 
     private void Start()
@@ -20,20 +23,26 @@ public class Gameplay : MonoBehaviour
         else if (Instance != this)
             Destroy(gameObject);
 
+        Destroy(GameObject.Find("Lev1Bricks"));
+        Destroy(GameObject.Find("Lev2Bricks"));
         Setup();
     }
 
     public void Setup()
     {
+        //BoxCollider2D[] colliders;
         resettingPaddle = Instantiate(basePaddle, transform.position, Quaternion.identity) as GameObject;
+        brickTemplate = GameObject.Find("Lev" + currentLevel+ "Bricks");
+        brickTemplate.GetComponentsInChildren<BoxCollider2D>().Select(x => x.enabled = true);
         Instantiate(brickTemplate, transform.position, Quaternion.identity);
     }
 
-    private void CheckIfWon()
+    private void CheckIfWon() 
     {
-        if (numOfBricks < 1)
+        if (brickAmount < 1)
         {
             Won.SetActive(true);
+            currentLevel++;
             Invoke("ResetLevel", RESET_DELAY);
         }
     }
@@ -49,7 +58,7 @@ public class Gameplay : MonoBehaviour
 
     private void ResetLevel()
     {
-        UnityEngine.SceneManagement.SceneManager.LoadScene("BrickBreakerGame");
+        UnityEngine.SceneManagement.SceneManager.LoadScene(SCENE_NAME);
     }
 
     public void LoseLife()
@@ -79,7 +88,7 @@ public class Gameplay : MonoBehaviour
 
     public void DestroyBrick()
     {
-        numOfBricks--;
+        brickAmount--;
         CheckIfWon();
     }
 }
