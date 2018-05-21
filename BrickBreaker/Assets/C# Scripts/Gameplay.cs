@@ -1,20 +1,16 @@
 ﻿using UnityEngine;
+using System.Linq;
 
 public class Gameplay : MonoBehaviour
 {
-    public float delay = 1.5f;
-    public int numOfBricks = 56;
-    public int lives = 3;
-    public GameObject Won;
-    public GameObject Lost;
-    public GameObject brickTemplate;
-    public GameObject basePaddle;
-    public GameObject resettingPaddle;
-    public GameObject FirstHeart;
-    public GameObject SecondHeart;
-    public GameObject ThirdHeart;
+    private const float ResetDelay = 1.5f;
+    private const string SceneName = "BrickBreakerGame";
+    public int BrickAmount;
+    public int Lives;
+    public int CurrentLevel = 1;
+    public GameObject ResettingPaddle;
 
-    public static Gameplay Instance = null;
+    public static Gameplay Instance;
 
     private void Start()
     {
@@ -28,57 +24,93 @@ public class Gameplay : MonoBehaviour
 
     public void Setup()
     {
-        resettingPaddle = Instantiate(basePaddle, transform.position, Quaternion.identity) as GameObject;
-        Instantiate(brickTemplate, transform.position, Quaternion.identity);
+        BrickAmount = 56;
+        Lives = 3;
+        Destroy(GameObject.Find("Won(Clone)"));
+        Instantiate(Resources.Load("Heart"), GameObject.Find("CanvasUI").transform);
+        Instantiate(Resources.Load("Heart 2"), GameObject.Find("CanvasUI").transform);
+        Instantiate(Resources.Load("Heart 3"), GameObject.Find("CanvasUI").transform);
+        ResettingPaddle = Instantiate(Resources.Load("Paddle"), transform.position, Quaternion.identity) as GameObject;
+        var currentBrick = Resources.Load("Lev" + CurrentLevel + "Bricks") as GameObject;
+        var colliders = currentBrick.GetComponentsInChildren(typeof(BoxCollider2D), true);
+        colliders.Select(x => ((BoxCollider2D) (x)).enabled = true);
+      
+        Instantiate(currentBrick, transform.position, Quaternion.identity);
     }
 
-    private void CheckGameOver()
+    private void CheckIfWon() 
     {
-        if (numOfBricks < 1)
+        if (BrickAmount < 1)
         {
-            Won.SetActive(true);
-            Invoke("ResetLevel", delay);
+            Instantiate(Resources.Load("Won"), GameObject.Find("CanvasUI").transform);
+            if(CurrentLevel == 3)
+            {
+                CurrentLevel = 1;
+            }
+            else
+            {
+                CurrentLevel++;
+            }
+            Invoke("FinishPreviousLevel", 0);
+            Invoke("Setup", ResetDelay);
         }
-        if (lives < 1)
+    }
+
+    private void FinishPreviousLevel()
+    {
+        Destroy(GameObject.Find("Ball"));
+        Destroy(GameObject.Find("Paddle(Clone)"));
+        Destroy(ResettingPaddle);
+        Destroy(GameObject.Find("Lev" + (CurrentLevel - 1) + "Bricks"));
+        Destroy(GameObject.Find("Heart(Clone)"));
+        Destroy(GameObject.Find("Heart 2(Clone)"));
+        Destroy(GameObject.Find("Heart 3(Clone)"));
+    }
+
+    private void CheckIfLost()
+    {
+        if (Lives < 1)
         {
-            Lost.SetActive(true);
-            Invoke("ResetLevel", delay);
+            Instantiate(Resources.Load("Lost"), GameObject.Find("CanvasUI").transform);
+            Invoke("ResetLevel", ResetDelay);
         }
     }
 
     private void ResetLevel()
     {
-        UnityEngine.SceneManagement.SceneManager.LoadScene("BrickBreakerGame");
+        UnityEngine.SceneManagement.SceneManager.LoadScene(SceneName);
     }
 
     public void LoseLife()
     {
-        switch (lives)
+        switch (Lives)
         {
             case 3:
-                FirstHeart.SetActive(false);
+                Destroy(GameObject.Find("Heart 3(Clone)"));
                 break;
             case 2:
-                SecondHeart.SetActive(false);
+                Destroy(GameObject.Find("Heart 2(Clone)"));
                 break;
             case 1:
-                ThirdHeart.SetActive(false);
+                Destroy(GameObject.Find("Heart(Clone)"));
                 break;
         }
-        lives--;
-        Destroy(resettingPaddle);
-        Invoke("ResetPaddleAfterDeath", delay);
-        CheckGameOver();
+
+        Lives--;
+        Destroy(ResettingPaddle);
+        Destroy(GameObject.Find("Ball"));
+        CheckIfLost();
+        Invoke("ResetPaddleAfterDeath", ResetDelay);
     }
 
     private void ResetPaddleAfterDeath()
     {
-        resettingPaddle = Instantiate(basePaddle, transform.position, Quaternion.identity) as GameObject;
+        ResettingPaddle = Instantiate(Resources.Load("Paddle"), transform.position, Quaternion.identity) as GameObject;
     }
 
     public void DestroyBrick()
     {
-        numOfBricks--;
-        CheckGameOver();
+        BrickAmount--;
+        CheckIfWon();
     }
 }
